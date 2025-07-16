@@ -1,0 +1,359 @@
+= New Java Features
+:revealjs_theme: night
+:source-highlighter: highlight.js
+:highlightjsdir: https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build
+:revealjs_margin: 0.0
+:revealjs_width: 1280
+:revealjs_height: 720
+
+Since Java 9
+
+// Focus is new language features, or significant APIs
+
+== 9: Java Modules
+
+* This could be a whole session on its own
+* Not used in Liberty
+* Many API jars will now have a module-info.class
+
+== Private methods on interfaces
+
+* Allows sharing of common code between `default` methods
+
+== Compile for older versions
+
+* `-release` option
+* Targets older bytecode (as before with -source and -target)
+* Checks you don't use newer classes (new)
+
+== Factory methods for collections
+
+* e.g. `List.of(1, 2, 3)`
+* Created collections are immutable
+
+== 10: Local variable type inference
+
+[source,java]
+----
+var list = new ArrayList<String>(); // Infers ArrayList<String>
+var stream = list.stream();         // Infers Stream<String>
+----
+
+=== Type inference
+
+[source, java]
+----
+void removeOdd(Map<String, List<Integer>> map) {
+    for (Iterator<Entry<String, List<Integer>>> i = map.entrySet().iterator(); i.hasNext();) {
+        Entry<String, List<Integer>> entry = i.next();
+        List<Integer> numList = entry.getValue();
+        if (numList.stream().filter(i -> i % 2 != 0).findAny().isPresent()) {
+            i.remove();
+        }
+    }
+}
+----
+
+=== Type inference
+
+[source, java]
+----
+void removeOdd(Map<String, List<Integer>> map) {
+    for (var i = map.entrySet().iterator(); i.hasNext();) {
+        var entry = i.next();
+        var numList = entry.getValue();
+        if (numList.stream().filter(i -> i % 2 != 0).findAny().isPresent()) {
+            i.remove();
+        }
+    }
+}
+----
+
+== 11: New HTTP Client
+
+* `java.net.http` package
+* Can be used instead of `HttpURLConnection` or Apache `HttpClient`
+
+== 14: Switch Expressions
+
+New syntax for `switch`
+
+[source, java]
+----
+switch (day) {
+    case MONDAY, FRIDAY, SUNDAY -> System.out.println(6);
+    case TUESDAY                -> System.out.println(7);
+    case THURSDAY, SATURDAY     -> System.out.println(8);
+    case WEDNESDAY              -> System.out.println(9);
+}
+----
+
+Old syntax still supported
+
+=== No fallthrough
+
+[source, java]
+----
+switch (x) {
+    case A:
+    case B:
+        // Stuff for A and B
+        break;
+    case C:
+        // Stuff for C
+        break;
+}
+----
+
+[source, java]
+----
+switch (x) {
+    case A, B -> {/* Stuff for A and B"*/ }
+    case C    -> {/* Stuff for C */};
+}
+----
+
+=== Can return a value
+
+[source, java]
+----
+int numLetters = switch (day) {
+    case MONDAY, FRIDAY, SUNDAY -> 6;
+    case TUESDAY                -> 7;
+    case THURSDAY, SATURDAY     -> 8;
+    case WEDNESDAY              -> 9;
+};
+----
+
+When returning a value, the switch must be _exhaustive_.
+
+=== `yield` to return a value from a block
+
+[source, java]
+----
+int j = switch (day) {
+    case MONDAY  -> 0;
+    case TUESDAY -> 1;
+    default      -> {
+        int k = day.toString().length();
+        int result = f(k);
+        yield result;
+    }
+};
+----
+
+== 15: Hidden classes
+
+* For frameworks which dynamically define classes
+* Prevents discovery or loading by name
+* Allows class to be unloaded while parent Classloader is still in use
+
+== 15: Text Blocks
+
+* Easy quoting around multi-line string literals
+* Before:
+
+[source, java]
+----
+String query = "SELECT \"EMP_ID\", \"LAST_NAME\" FROM \"EMPLOYEE_TB\"\n" +
+               "WHERE \"CITY\" = 'INDIANAPOLIS'\n" +
+               "ORDER BY \"EMP_ID\", \"LAST_NAME\";\n";
+----
+* After:
+
+[source, java]
+----
+String query = """
+               SELECT "EMP_ID", "LAST_NAME" FROM "EMPLOYEE_TB"
+               WHERE "CITY" = 'INDIANAPOLIS'
+               ORDER BY "EMP_ID", "LAST_NAME";
+               """;
+----
+
+=== Indentation
+
+* Common leading whitespace is removed so that text can indented sensibly without compromising formatting
+
+[source, java]
+----
+String html = """
+            <html>
+                <body>
+                    <p>Hello, world</p>
+                </body>
+            </html>
+            """;
+----
+
+=== Indentation
+
+Will result in
+
+[source, html]
+----
+<html>
+    <body>
+        <p>Hello, world</p>
+    </body>
+</html>
+----
+
+== 16: Pattern Matching for instanceof
+
+* Combines an instanceof check with a cast
+
+Before:
+[source,java]
+----
+if (obj instanceof String) {
+    String s = (String) obj;    // grr...
+    ...
+}
+----
+
+After:
+[source,java]
+----
+if (obj instanceof String s) {
+    // Let pattern matching do the work!
+    ...
+}
+----
+
+== 16: Records
+
+* Concise syntax for simple, immutable data classes
+* Can think of them as typed tuples
+
+=== Without Records
+
+[source.stretch, java]
+----
+class Point {
+    private final int x;
+    private final int y;
+
+    Point(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    int x() { return x; }
+    int y() { return y; }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof Point)) return false;
+        Point other = (Point) o;
+        return other.x == x && other.y == y;
+    }
+
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
+
+    public String toString() {
+        return String.format("Point[x=%d, y=%d]", x, y);
+    }
+}
+----
+
+=== With records
+
+[source, java]
+----
+record Point(int x, int y) { }
+----
+
+=== Record features
+
+- `private final` fields
+- accessor methods
+  - same name as field (i.e, `x()` and `y()`)
+- `equals` and `hashCode`
+- `toString`
+
+=== Record restrictions
+
+- Cannot `extend` another class
+  - but can implement interfaces
+- Always `final`
+- Cannot declare additional fields
+- No `native` methods
+
+== 17: Sealed classes
+
+- Declaration on an interface or class limiting which classes can extend or implement it
+
+[source,java]
+----
+public abstract sealed class Shape
+    permits Circle, Rectangle, Square { ... }
+----
+
+== 18: Snippets in Javadoc
+
+=== Highlighting
+
+=== Modifying
+
+=== Linking
+
+=== External snippets
+
+=== Other code languages
+
+== 21: Record Patterns
+
+* Combines an `instanceof` check with the deconstruction of a record
+
+[source,java]
+----
+static void printSum(Object obj) {
+    if (obj instanceof Point p) {
+        int x = p.x();
+        int y = p.y();
+        System.out.println(x+y);
+    }
+}
+----
+
+[source,java]
+----
+static void printSum(Object obj) {
+    if (obj instanceof Point(int x, int y)) {
+        System.out.println(x+y);
+    }
+}
+----
+
+== 21: Pattern matching for switch
+
+* Allows several `instanceof` checks to be expressed as a `switch`
+
+[source,java]
+----
+static String formatterPatternSwitch(Object obj) {
+    return switch (obj) {
+        case Integer i -> String.format("int %d", i);
+        case Long l    -> String.format("long %d", l);
+        case Double d  -> String.format("double %f", d);
+        case String s  -> String.format("String %s", s);
+        default        -> obj.toString();
+    };
+}
+----
+
+// TODO: Can you mix and match values?
+
+=== Null allowed
+
+[source,java]
+----
+static void testFooBarNew(String s) {
+    switch (s) {
+        case null         -> System.out.println("Oops");
+        case "Foo", "Bar" -> System.out.println("Great");
+        default           -> System.out.println("Ok");
+    }
+}
+----
