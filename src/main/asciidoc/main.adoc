@@ -29,7 +29,13 @@ Since Java 9
 == Factory methods for collections
 
 * e.g. `List.of(1, 2, 3)`
+* e.g. `Map.of("foo", new Foo(), "bar", new Bar())`
 * Created collections are immutable
+
+[.notes]
+--
+May have used `Arrays.asList` for this before. Do note that `List.of` is unmodifiable.
+--
 
 == 10: Local variable type inference
 
@@ -38,6 +44,15 @@ Since Java 9
 var list = new ArrayList<String>(); // Infers ArrayList<String>
 var stream = list.stream();         // Infers Stream<String>
 ----
+
+[.notes]
+--
+JEP286
+
+Only applicable to local variables with initializers, and index variables in for-loops.
+
+Few cases (e.g. Lambdas) where it's impossible to infer a type and others where you might not want the inferred type (e.g. you might want `List<String>`).
+--
 
 === Type inference
 
@@ -113,6 +128,19 @@ switch (x) {
 }
 ----
 
+[.notes]
+--
+For old switch, you can do fallthrough like this and use `break` to mark the end of each block.
+
+It's actually possible to put stuff between case A and B here which will run for A and not for B, but then the stuff after B will run for both.
+
+That's rarely useful, usually it's because you forgot to put `break` in.
+
+No longer! The new switch syntax does allow you to have several inputs run the same code, but it does it like this.
+
+Here we also demonstrate that you can use blocks for each case.
+--
+
 === Can return a value
 
 [source, java]
@@ -126,6 +154,13 @@ int numLetters = switch (day) {
 ----
 
 When returning a value, the switch must be _exhaustive_.
+
+[.notes]
+--
+Note there's no return here, you just put the value you want to return.
+
+If you need to do something more complex before you return then...
+--
 
 === `yield` to return a value from a block
 
@@ -257,6 +292,11 @@ class Point {
 }
 ----
 
+[.notes]
+--
+A good practise immutable Java class with two values might look like this.
+--
+
 === With records
 
 [source, java]
@@ -272,11 +312,16 @@ record Point(int x, int y) { }
 - `equals` and `hashCode`
 - `toString`
 
+[.notes]
+--
+This is what records give you automatically
+--
+
 === Record restrictions
 
 - Cannot `extend` another class
   - but can implement interfaces
-- Always `final`
+- Always `final` (can't be extended)
 - Cannot declare additional fields
 - No `native` methods
 
@@ -292,13 +337,140 @@ public abstract sealed class Shape
 
 == 18: Snippets in Javadoc
 
+Lots of Javadoc comments have examples included like this:
+[source,java]
+----
+/**
+ * Example:
+ * <pre>{@code
+ *   Foo.bar();
+ * }</pre>
+ */
+public void bar();
+----
+
+=== New Snippet Syntax
+
+[source,java]
+----
+/**
+ * Example:
+ * {@snippet :
+ *   Foo.bar();
+ * }
+ */
+----
+
+[.notes]
+--
+No need to escape characters like `@, <, >, &`
+
+Leading whitespace is stripped (like text blocks we saw earlier)
+
+Limitations:
+- Can't use `/* */` comments
+- Must have balanced curly braces
+
+More tricks:
+--
+
+=== External snippets
+
+[source,java]
+----
+/**
+ * The following code shows how to use {@code Optional.isPresent}:
+ * {@snippet file="ShowOptional.java" region="example"}
+ */
+----
+
+where `ShowOptional.java` is a file containing:
+
+[source,java]
+----
+public class ShowOptional {
+    void show(Optional<String> v) {
+        // @start region="example"
+        if (v.isPresent()) {
+            System.out.println("v: " + v.get());
+        }
+        // @end
+    }
+}
+----
+
+[.notes]
+--
+Snippet files live in a separate `snippet-files` directory.
+
+@start and @end to indicate the region for the snippet
+
+Can be edited with full IDE support.
+
+Can be put on your test classpath for testing.
+--
+
 === Highlighting
+
+[source, java]
+----
+/**
+ * A simple program.
+ * {@snippet :
+ * class HelloWorld {
+ *     public static void main(String... args) {
+ *         System.out.println("Hello World!");      // @highlight substring="println"
+ *     }
+ * }
+ * }
+ */
+----
 
 === Modifying
 
+[source, java]
+----
+/**
+ * A simple program.
+ * {@snippet :
+ * class HelloWorld {
+ *     public static void main(String... args) {
+ *         System.out.println("Hello World!");  // @replace regex='".*"' replacement="..."
+ *     }
+ * }
+ * }
+ */
+----
+
+[source, java]
+----
+class HelloWorld {
+    public static void main(String... args) {
+        System.out.println(...);
+    }
+}
+----
+
 === Linking
 
-=== External snippets
+[source, java]
+----
+/**
+ * A simple program.
+ * {@snippet :
+ * class HelloWorld {
+ *     public static void main(String... args) {
+ *         System.out.println("Hello World!");  // @link substring="System.out" target="System#out"
+ *     }
+ * }
+ * }
+ */
+----
+
+[.notes]
+--
+Target is the same form as the standard `{@link }` tag
+--
 
 === Other code languages
 
