@@ -472,8 +472,6 @@ class HelloWorld {
 Target is the same form as the standard `{@link }` tag
 --
 
-=== Other code languages
-
 == 21: Record Patterns
 
 * Combines an `instanceof` check with the deconstruction of a record
@@ -529,3 +527,115 @@ static void testFooBarNew(String s) {
     }
 }
 ----
+
+== 22: Unnamed variables
+
+* Allows deliberately declaring a variable you don't want to use
+
+[source,java]
+----
+static int count(Iterable<Order> orders) {
+    int total = 0;
+    for (Order _ : orders)    // Unused variable
+        total++;
+    return total;
+}
+----
+
+=== Also in switch patterns
+
+[source,java]
+----
+Ball ball = ...
+switch (ball) {
+    case RedBall   red   -> process(red);
+    case BlueBall  blue  -> process(blue);
+    case GreenBall _     -> stopProcessing();
+}
+----
+
+== 23: Markdown Javadoc Comments
+
+[source,java]
+----
+/**
+ * Super-important method for very critical things.
+ * <p>
+ * When calling this method it's essential to:
+ * <ul>
+ * <li>acquire the lock while retrieving the widget
+ * <li>return every widget that is retrieved
+ * <li>acquire the lock while returning the widget
+ * 
+ * @see com.example.Widget
+ */
+----
+
+=== Markdown Javadoc Comments
+
+[source,java]
+----
+/// Super-important method for very critical things.
+/// 
+/// When calling this method it's essential to:
+/// 
+/// - acquire the lock while retrieving the widget
+/// - return every widget that is retrieved
+/// - acquire the lock while returning the widget
+/// 
+/// @see com.example.Widget
+----
+
+== 24: Class-File API
+
+New API for reading and writing class files directly: `java.lang.classfile`
+
+Similar use-cases as the ASM library.
+
+== 24: Stream gatherers
+
+Allows for custom complex operations in the middle of a stream.
+
+Similar to `Collector` but for intermediate operations.
+
+=== Custom operations
+
+[source,java]
+----
+Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+      .filter(i -> i % 2 == 0)       // Only even numbers
+      .fixedWindow(2)                // Pair them up <-- doesn't exist
+      .map(i -> i.get(0) + i.get(1)) // Sum each pair
+      .toList();                     // Collect in a list
+----
+
+=== Built-in gatherers
+
+[source,java]
+----
+Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+      .filter(i -> i % 2 == 0)          // Only even numbers
+      .gather(Gatherers.fixedWindow(2)) // Pair them up
+      .map(i -> i.get(0) + i.get(1))    // Sum each pair
+      .toList();                        // Collect in a list
+----
+
+== 25: Flexible Constructor Bodies
+
+Previously `super` or `this` had to be the first thing called in a constructor
+
+You could kind of hack around it a bit by calling static methods to calculate the parameters
+
+Now you're allowed to do a limited number of things before calling `this` or `super`
+
+You still can't:
+- Use `this` to refer to the current instance
+- Access fields of this or a super class
+- Call non-static methods of this or a super class
+
+However, you may:
+- Use simple assignment to uninitialized fields
+
+== 25: Scoped Values
+
+- Alternative to `ThreadLocal` for passing context.
