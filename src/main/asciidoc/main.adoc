@@ -2,6 +2,7 @@
 :revealjs_theme: night
 :source-highlighter: highlight.js
 :highlightjsdir: https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build
+:highlightjs-theme: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/a11y-dark.css
 :revealjs_margin: 0.0
 :revealjs_width: 1280
 :revealjs_height: 720
@@ -88,6 +89,7 @@ void removeOdd(Map<String, List<Integer>> map) {
 
 * `java.net.http` package
 * Can be used instead of `HttpURLConnection` or Apache `HttpClient`
+* Supports HTTP/1.1 and HTTP/2
 
 == 14: Switch Expressions
 
@@ -624,18 +626,86 @@ Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
 
 Previously `super` or `this` had to be the first thing called in a constructor
 
+[source,java]
+----
+public MyClass(String name, int count) {
+    String identifier = computeItentifier(name, count); // NOT ALLOWED
+    super(identifier, name);
+}
+----
+
+=== Flexible Constructor Bodies
+
 You could kind of hack around it a bit by calling static methods to calculate the parameters
+
+[source,java]
+----
+public MyClass(String name, int count) {
+    super(computeItentifier(name, count), name);
+}
+----
+
+=== Flexible Constructor Bodies
 
 Now you're allowed to do a limited number of things before calling `this` or `super`
 
-You still can't:
-- Use `this` to refer to the current instance
-- Access fields of this or a super class
-- Call non-static methods of this or a super class
+* You still can't:
+** Use `this` to refer to the current instance
+** Access fields of this or a super class
+** Call non-static methods of this or a super class
 
-However, you may:
-- Use simple assignment to uninitialized fields
+* However, you may:
+** Use simple assignment to uninitialized fields
 
 == 25: Scoped Values
 
-- Alternative to `ThreadLocal` for passing context.
+* Alternative to `ThreadLocal` for passing context.
+
+=== 25: Thread Local Example
+
+[source,java]
+----
+private static final ThreadLocal<MyContext> CONTEXT = new ThreadLocal<>();
+
+void doGet(ServletRequest request, ServletResponse response) {
+    CONTEXT.set(createContext(request));
+    try {
+        handle(request, response);
+    } finally {
+        CONTEXT.remove()
+    }
+}
+
+// Called from within handle()
+public MyContext getContext() {
+    return CONTEXT.get();
+}
+----
+
+=== 25: ScopedValue Example
+
+[source,java]
+----
+private static final ScopedValue<MyContext> CONTEXT = ScopedValue.newInstance();
+
+void doGet(ServletRequest request, ServletResponse response) {
+    MyContext context = createContext(request);
+    ScopedValue.where(CONTEXT, context)
+               .run(() -> handle(request, response));
+}
+
+// Called from within handle()
+public MyContext getContext() {
+    return CONTEXT.get();
+}
+----
+
+=== 25: ThreadLocal vs. ScopedValue
+
+* `ThreadLocal`
+** Unlimited lifetime
+** Mutable
+* `ScopedValue`
+** Limited lifetime (can't forget to call `remove()`)
+** Immutable
+*** Can be rebound in a new scope
