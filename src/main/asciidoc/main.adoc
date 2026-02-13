@@ -17,17 +17,17 @@ Since Java 9
 * Not used in Liberty
 * Many API jars will now have a module-info.class
 
-== Private methods on interfaces
+== 9: Private methods on interfaces
 
 * Allows sharing of common code between `default` methods
 
-== Compile for older versions
+== 9: Compile for older versions
 
 * `-release` option
 * Targets older bytecode (as before with -source and -target)
 * Checks you don't use newer classes (new)
 
-== Factory methods for collections
+== 9: Factory methods for collections
 
 * e.g. `List.of(1, 2, 3)`
 * e.g. `Map.of("foo", new Foo(), "bar", new Bar())`
@@ -36,6 +36,18 @@ Since Java 9
 [.notes]
 --
 May have used `Arrays.asList` for this before. Do note that `List.of` is unmodifiable.
+--
+
+== 9: StackWalker
+
+* `java.lang.StackWalker`
+* Allows access to a `Stream<StackFrame>`
+* Alternative API to `Thread.getStackTrace` and `SecurityManager.getClassContext` for obtaining the current stack
+
+[.notes]
+--
+A few parts of Liberty (such as the CDI API) sometimes need to know which class called them.
+I haven't tested, but has the potential to be faster because the JVM doesn't have to compute the whole stack if you're only interested in the top few frames.
 --
 
 == 10: Local variable type inference
@@ -590,15 +602,13 @@ switch (ball) {
 
 == 24: Class-File API
 
-New API for reading and writing class files directly: `java.lang.classfile`
-
-Similar use-cases as the ASM library.
+- New API for reading and writing class files directly: `java.lang.classfile`
+- Similar use-cases as the ASM library.
 
 == 24: Stream gatherers
 
-Allows for custom complex operations in the middle of a stream.
-
-Similar to `Collector` but for intermediate operations.
+- Allows for custom complex operations in the middle of a stream.
+- Similar to `Collector` but for intermediate operations.
 
 === Custom operations
 
@@ -609,6 +619,11 @@ Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
       .fixedWindow(2)                // Pair them up <-- doesn't exist
       .map(i -> i.get(0) + i.get(1)) // Sum each pair
       .toList();                     // Collect in a list
+----
+
+[source,json]
+----
+[6, 14, 22]
 ----
 
 === Built-in gatherers
@@ -624,7 +639,7 @@ Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
 
 == 25: Flexible Constructor Bodies
 
-Previously `super` or `this` had to be the first thing called in a constructor
+- Previously `super` or `this` had to be the first thing called in a constructor
 
 [source,java]
 ----
@@ -636,7 +651,7 @@ public MyClass(String name, int count) {
 
 === Flexible Constructor Bodies
 
-You could kind of hack around it a bit by calling static methods to calculate the parameters
+- You could kind of hack around it a bit by calling static methods to calculate the parameters
 
 [source,java]
 ----
@@ -647,7 +662,7 @@ public MyClass(String name, int count) {
 
 === Flexible Constructor Bodies
 
-Now you're allowed to do a limited number of things before calling `this` or `super`
+* Now you're allowed to do a limited number of things before calling `this` or `super`
 
 * You still can't:
 ** Use `this` to refer to the current instance
@@ -672,7 +687,7 @@ void doGet(ServletRequest request, ServletResponse response) {
     try {
         handle(request, response);
     } finally {
-        CONTEXT.remove()
+        CONTEXT.remove();
     }
 }
 
