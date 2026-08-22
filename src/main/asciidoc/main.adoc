@@ -9,7 +9,10 @@
 
 Since Java 9
 
-// Focus is new language features, or significant APIs
+[.notes]
+--
+The focus here is on new language features or significant APIs, things that you can use in your code, if you know they exist.
+--
 
 == 9: Java Modules
 
@@ -75,12 +78,19 @@ void removeOdd(Map<String, List<Integer>> map) {
     for (Iterator<Entry<String, List<Integer>>> i = map.entrySet().iterator(); i.hasNext();) {
         Entry<String, List<Integer>> entry = i.next();
         List<Integer> numList = entry.getValue();
-        if (numList.stream().filter(i -> i % 2 != 0).findAny().isPresent()) {
+        if (numList.stream().anyMatch(i -> i % 2 != 0)) {
             i.remove();
         }
     }
 }
 ----
+
+[.notes]
+--
+Example: Map of strings -> numbers, and you want to remove every map entry where the value contains an odd number.
+
+Lots of repeated types.
+--
 
 === Type inference
 
@@ -90,7 +100,7 @@ void removeOdd(Map<String, List<Integer>> map) {
     for (var i = map.entrySet().iterator(); i.hasNext();) {
         var entry = i.next();
         var numList = entry.getValue();
-        if (numList.stream().filter(i -> i % 2 != 0).findAny().isPresent()) {
+        if (numList.stream().anyMatch(i -> i % 2 != 0)) {
             i.remove();
         }
     }
@@ -320,11 +330,11 @@ record Point(int x, int y) { }
 
 === Record features
 
-- `private final` fields
-- accessor methods
-  - same name as field (i.e, `x()` and `y()`)
-- `equals` and `hashCode`
-- `toString`
+* `private final` fields
+* accessor methods
+** same name as field (i.e, `x()` and `y()`)
+* `equals` and `hashCode`
+* `toString`
 
 [.notes]
 --
@@ -333,15 +343,15 @@ This is what records give you automatically
 
 === Record restrictions
 
-- Cannot `extend` another class
-  - but can implement interfaces
-- Always `final` (can't be extended)
-- Cannot declare additional fields
-- No `native` methods
+* Cannot `extend` another class
+** but can implement interfaces
+* Always `final` (can't be extended)
+* Cannot declare additional fields
+* No `native` methods
 
 == 17: Sealed classes
 
-- Declaration on an interface or class limiting which classes can extend or implement it
+* Declaration on an interface or class limiting which classes can extend or implement it
 
 [source,java]
 ----
@@ -580,7 +590,7 @@ switch (ball) {
  * <li>acquire the lock while retrieving the widget
  * <li>return every widget that is retrieved
  * <li>acquire the lock while returning the widget
- * 
+ *
  * @see com.example.Widget
  */
 ----
@@ -590,13 +600,13 @@ switch (ball) {
 [source,java]
 ----
 /// Super-important method for very critical things.
-/// 
+///
 /// When calling this method it's essential to:
-/// 
+///
 /// - acquire the lock while retrieving the widget
 /// - return every widget that is retrieved
 /// - acquire the lock while returning the widget
-/// 
+///
 /// @see com.example.Widget
 ----
 
@@ -621,6 +631,13 @@ Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
       .toList();                     // Collect in a list
 ----
 
+[.notes]
+--
+The `fixedWindow` method doesn't exist and it's impossible to do this without gatherers.
+
+We have `flatMap` which allows you to turn one element into several, but nothing that lets you take several elements and turn them into one.
+--
+
 [source,json]
 ----
 [6, 14, 22]
@@ -636,6 +653,13 @@ Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
       .map(i -> i.get(0) + i.get(1))    // Sum each pair
       .toList();                        // Collect in a list
 ----
+
+[.notes]
+--
+There are some built-in gatherers under the `Gatherers` class, which includes this `fixedWindow` gatherer, and you can also write your own. E.g. you could write a moving average gatherer.
+
+Refer to Gatherer
+--
 
 == 25: Flexible Constructor Bodies
 
@@ -667,10 +691,8 @@ public MyClass(String name, int count) {
 * You still can't:
 ** Use `this` to refer to the current instance
 ** Access fields of this or a super class
+*** Except simple assignment of uninitialized fields
 ** Call non-static methods of this or a super class
-
-* However, you may:
-** Use simple assignment to uninitialized fields
 
 == 25: Scoped Values
 
@@ -714,6 +736,13 @@ public MyContext getContext() {
     return CONTEXT.get();
 }
 ----
+
+[.notes]
+--
+If asked:
+* `.get()` throws `NoSuchElementException` if not set
+* Other methods exist `orElse`, `orElseThrow` - similar to `Optional`
+--
 
 === 25: ThreadLocal vs. ScopedValue
 
