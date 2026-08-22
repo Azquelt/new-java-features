@@ -28,7 +28,8 @@ The focus here is on new language features or significant APIs, things that you 
 
 * `-release` option
 * Targets older bytecode (as before with -source and -target)
-* Checks you don't use newer classes (new)
+* Checks you don't use classes that aren't available
+** This part is new
 
 == 9: Factory methods for collections
 
@@ -66,7 +67,6 @@ var stream = list.stream();         // Infers Stream<String>
 JEP286
 
 Only applicable to local variables with initializers, and index variables in for-loops.
-
 Few cases (e.g. Lambdas) where it's impossible to infer a type and others where you might not want the inferred type (e.g. you might want `List<String>`).
 --
 
@@ -106,6 +106,11 @@ void removeOdd(Map<String, List<Integer>> map) {
     }
 }
 ----
+
+[.notes]
+--
+Use judiciously, overuse can make code harder to read
+--
 
 == 11: New HTTP Client
 
@@ -753,3 +758,18 @@ If asked:
 ** Limited lifetime (can't forget to call `remove()`)
 ** Immutable
 *** Can be rebound in a new scope
+
+== Summary
+
+[cols="1,6", frame=ends, grid=rows]
+|===
+^| LTS | Key Highlights
+
+^| **11** | Modules, `-release`, `List.of`, `var`, HTTP Client
+
+^| **17** | Switch `->`, Text Blocks, `instanceof` Pattern Matching, Records, Sealed Classes
+
+^| **21** | Javadoc snippets, Record Patterns, Switch Pattern Matching, Scoped Values
+
+^| **25** | Unnamed variables, Javadoc Markdown, Stream Gatherers, Flexible Constructors, Scoped Values
+|===
