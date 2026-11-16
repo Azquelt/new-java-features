@@ -117,6 +117,7 @@ Use judiciously, overuse can make code harder to read
 * `java.net.http` package
 * Can be used instead of `HttpURLConnection` or Apache `HttpClient`
 * Supports HTTP/1.1 and HTTP/2
+* Support for HTTP/3 added in Java 26
 
 == 14: Switch Expressions
 
