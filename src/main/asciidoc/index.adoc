@@ -334,6 +334,34 @@ A good practise immutable Java class with two values might look like this.
 record Point(int x, int y) { }
 ----
 
+[.notes]
+--
+This gets you everything from the example on the previous slide (final fields, getters, equals, hashCode, toString).
+--
+
+=== Adding methods
+
+[source, java]
+----
+record Point(int x, int y) {
+
+    public double magnitude() {
+        double xd = (double) x;
+        double yd = (double) y;
+        return Math.sqrt((xd*xd) + (yd*yd));
+    }
+
+}
+----
+
+[.notes]
+--
+You can add additional methods to a record.
+
+Useful for doing computations or fulfilling interfaces.
+--
+
+
 === Record features
 
 * `private final` fields
@@ -354,6 +382,14 @@ This is what records give you automatically
 * Always `final` (can't be extended)
 * Cannot declare additional fields
 * No `native` methods
+* Adding fields breaks binary compatibility!
+
+[.notes]
+--
+Binary compatibility breaks because the canonical constructor is part of the contract.
+
+Don't put records in your API!
+--
 
 == 17: Sealed classes
 
