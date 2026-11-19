@@ -579,20 +579,64 @@ static String formatterPatternSwitch(Object obj) {
 }
 ----
 
-// TODO: Can you mix and match values?
-
 === Null allowed
 
 [source,java]
 ----
-static void testFooBarNew(String s) {
-    switch (s) {
-        case null         -> System.out.println("Oops");
-        case "Foo", "Bar" -> System.out.println("Great");
-        default           -> System.out.println("Ok");
-    }
+static String formatterPatternSwitch(Object obj) {
+    return switch (obj) {
+        case Integer i -> String.format("int %d", i);
+        case Long l    -> String.format("long %d", l);
+        case Double d  -> String.format("double %f", d);
+        case String s  -> String.format("String %s", s);
+        case null      -> "null";
+        default        -> obj.toString();
+    };
 }
 ----
+
+[.notes]
+--
+Can have a null case
+
+Might also wonder if you can mix and match these type matches with regular case statements which match against a value.
+
+You _can_ but you're still restricted by the existing rules for switch cases. The value needs to be a constant, of the right type, only certain types are allowed.
+
+BUT you can also now add a condition so you can check for a specific number, for example like this...
+--
+
+=== Match with `when`
+
+[source,java]
+----
+static String formatterPatternSwitch(Object obj) {
+    return switch (obj) {
+        case Integer i when i == 67 -> "SIX SEVEN!";
+        case Integer i              -> String.format("int %d", i);
+        case Long l                 -> String.format("long %d", l);
+        case Double d               -> String.format("double %f", d);
+        case String s               -> String.format("String %s", s);
+        case null                   -> "null";
+        default                     -> obj.toString();
+    };
+}
+----
+
+=== Use with sealed classes
+
+[source,java]
+----
+static int getSides(Shape shape) {
+    return switch (shape) {
+        case Circle c -> 1;
+        case Square s -> 4;
+        case Rectangle r -> 4;
+    };
+}
+----
+
+* No `default` needed to make switch exhaustive
 
 == 22: Unnamed variables
 
@@ -700,7 +744,7 @@ Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
 --
 There are some built-in gatherers under the `Gatherers` class, which includes this `fixedWindow` gatherer, and you can also write your own. E.g. you could write a moving average gatherer.
 
-Refer to Gatherer
+Refer to Gatherer interface
 --
 
 == 25: Flexible Constructor Bodies
